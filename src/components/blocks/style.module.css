@@ -1,0 +1,16 @@
+.block {
+  border: 1px solid black;
+}
+
+.size-8 {
+  width: 32px;
+  height: 32px;
+}
+
+.head {
+  background: rgb(143 48 48);
+}
+
+.snakeBlock {
+  background: rgb(115 91 91);
+}
