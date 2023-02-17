@@ -1,18 +1,25 @@
 import { Coord, Direction, Sizes } from './types';
-import { moveSnake, startGame, changeDirectionOriginal } from './events';
+import { moveSnake, startGame, changeDirectionOriginal, gameOver, eatFood } from './events';
 import { createStore } from 'effector';
+import { generateFoodPlacement } from './effects';
 
 export const $snake = createStore([] as Array<Coord>)
   .on(startGame, (_, size) => [
-    { x: size / 2, y: size / 2 },
-    { x: size / 2 - 1, y: size / 2 }
+    { 
+      x: size / 2, 
+      y: size / 2 
+    },
+    { 
+      x: size / 2 - 1, 
+      y: size / 2 
+    }
   ])
   .on(moveSnake, ([_, ...state], coord) => [...state, coord])
+  .on(eatFood, (state, newSnakeTail) => [newSnakeTail, ...state])
+  .reset(gameOver)
 
-export const food = createStore({
-  x: 0,
-  y: 0,
-});
+export const $food = createStore({ x: -1, y: -1 })
+  .on(generateFoodPlacement.doneData, (_, place) => place);
 
 export const $boardSize = createStore<Sizes>(16)
   .on(startGame, (_, payload) => payload)

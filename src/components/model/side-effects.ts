@@ -1,13 +1,17 @@
-import { sample, combine } from 'effector';
-import { 
-  startGame, 
-  gameTimeTick, 
-  moveSnake, 
-  changeDirection, 
-  changeDirectionOriginal 
+import { sample, combine, guard } from 'effector';
+import {
+  startGame,
+  gameTimeTick,
+  moveSnake,
+  changeDirection,
+  changeDirectionOriginal,
+  gameOver,
+  eatFood,
 } from './events';
-import { $boardSize, $direction, $snake } from './stores';
+import { $snakeHead, $snakeTail } from './computed';
+import { $boardSize, $direction, $snake, $food } from './stores';
 import { Direction } from './types';
+import { generateFoodPlacement } from './effects';
 
 let intervalTimer: null | NodeJS.Timer = null;
 
@@ -19,6 +23,14 @@ startGame.watch(() => {
   intervalTimer = setInterval(() => {
     gameTimeTick();
   }, 500);
+})
+
+gameOver.watch(() => {
+  if (intervalTimer) {
+    clearInterval(intervalTimer);
+  }
+
+  alert('Game over!')
 })
 
 sample({
@@ -36,40 +48,28 @@ sample({
       const x = snake[headOffset].x + 1;
       const y = snake[headOffset].y;
 
-      return {
-        x: x > size ? 0 : x,
-        y,
-      };
+      return { x, y };
     }
 
     case 'LEFT': {
       const x = snake[headOffset].x - 1;
       const y = snake[headOffset].y;
 
-      return {
-        x: x < 0 ? size : x,
-        y,
-      }
+      return { x, y }
     }
 
     case 'UP': {
       const x = snake[headOffset].x;
       const y = snake[headOffset].y - 1
-      
-      return {
-        x,
-        y: y < 0 ? size : y,
-      };
+
+      return { x, y };
     }
 
     case 'DOWN': {
       const x = snake[headOffset].x;
       const y = snake[headOffset].y + 1;
 
-      return {
-        x,
-        y: y > size ? 0 : y,
-      };
+      return { x, y };
     }
 
     default: return { x: 0, y: 0 };
@@ -91,3 +91,64 @@ sample({
   },
   target: changeDirectionOriginal
 });
+
+guard({
+  clock: moveSnake,
+  source: combine($snakeHead, $boardSize),
+  filter: ([{ x, y }, boardSize]) => (
+    x < 0
+    || x >= boardSize 
+    || y < 0
+    || y >= boardSize
+  ),
+  target: gameOver,
+})
+
+sample({
+  clock: [startGame, eatFood],
+  source: combine({
+    snake: $snake,
+    boardSize: $boardSize
+  }),
+  target: generateFoodPlacement
+})
+
+const foodEaten = guard({
+  clock: moveSnake,
+  source: combine({
+    food: $food,
+    snakeHead: $snakeHead,
+  }),
+  filter: ({ food, snakeHead }) => (
+    food.x === snakeHead.x &&
+    food.y === snakeHead.y
+  ),
+})
+
+sample({
+  clock: foodEaten,
+  source: combine({ direction: $direction, snakeTail: $snakeTail }),
+  fn: ({ direction, snakeTail }, snakeHead) => {
+    switch (direction) {
+    case 'LEFT': return {
+      x: snakeTail.x + 1, 
+      y: snakeTail.y 
+    };
+    case 'RIGHT': return {
+      x: snakeTail.x - 1, 
+      y: snakeTail.y 
+    };
+    case 'DOWN': return {
+      x: snakeTail.x, 
+      y: snakeTail.y - 1
+    };
+    case 'UP': return {
+      x: snakeTail.x, 
+      y: snakeTail.y + 1
+    };
+    }
+  },
+  target: eatFood
+})
+
+eatFood.watch(() => console.log('its time to eat a food!'));
