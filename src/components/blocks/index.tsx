@@ -1,6 +1,6 @@
 import { useStore } from 'effector-react';
 import { Stage, Layer, Rect } from 'react-konva';
-import { Sizes, $snake, $food } from '../model';
+import { Sizes, $snake, $food } from '../../model';
 
 type Props = {
   size: Sizes

@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useStore } from 'effector-react';
 import { useEffect } from 'react';
 import { Blocks } from '../blocks';
-import { $boardSize, changeDirection, startGame } from '../model';
+import { $boardSize, changeDirection, startGame } from '../../model';
 import styles from './style.module.css'
 
 export const Container = () => {
