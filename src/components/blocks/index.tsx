@@ -26,12 +26,13 @@ export const Blocks = ({ size }: Props) => {
                   fill={
                     food.x === x && food.y === y
                       ? 'yellow'
-                      : isTail ? 'red' : 'black'
+                      : isTail ? 'red' : 'grey'
                   } 
                   width={28} 
                   height={28} 
                   key={key} 
                   stroke={'white'}
+                  cornerRadius={2}
                 />
               )
             })

@@ -1,4 +1,4 @@
-import { sample, combine, guard } from 'effector';
+import { sample, combine, guard, forward } from 'effector';
 import {
   startGame,
   gameTimeTick,
@@ -8,7 +8,7 @@ import {
   gameOver,
   eatFood,
 } from './events';
-import { $snakeHead, $snakeTail } from './computed';
+import { $hasCollision, $snakeHead, $snakeTail } from './computed';
 import { $boardSize, $direction, $snake, $food } from './stores';
 import { Direction } from './types';
 import { generateFoodPlacement } from './effects';
@@ -40,7 +40,7 @@ sample({
     snake: $snake,
     size: $boardSize,
   }),
-  fn: ({ direction, snake, size }) => {
+  fn: ({ direction, snake }) => {
     const headOffset = snake.length - 1;
 
     switch (direction) {
@@ -127,28 +127,18 @@ const foodEaten = guard({
 
 sample({
   clock: foodEaten,
-  source: combine({ direction: $direction, snakeTail: $snakeTail }),
-  fn: ({ direction, snakeTail }, snakeHead) => {
-    switch (direction) {
-    case 'LEFT': return {
-      x: snakeTail.x + 1, 
+  source: $snakeTail,
+  fn: (snakeTail) => {
+    return {
+      x: snakeTail.x, 
       y: snakeTail.y 
     };
-    case 'RIGHT': return {
-      x: snakeTail.x - 1, 
-      y: snakeTail.y 
-    };
-    case 'DOWN': return {
-      x: snakeTail.x, 
-      y: snakeTail.y - 1
-    };
-    case 'UP': return {
-      x: snakeTail.x, 
-      y: snakeTail.y + 1
-    };
-    }
+    
   },
   target: eatFood
 })
 
-eatFood.watch(() => console.log('its time to eat a food!'));
+forward({
+  from: $hasCollision,
+  to: gameOver,
+})
