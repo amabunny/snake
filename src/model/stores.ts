@@ -19,7 +19,8 @@ export const $snake = createStore([] as Array<Coord>)
   .reset(gameOver)
 
 export const $food = createStore({ x: -1, y: -1 })
-  .on(generateFoodPlacement.doneData, (_, place) => place);
+  .on(generateFoodPlacement.doneData, (_, place) => place)
+  .reset(gameOver);
 
 export const $boardSize = createStore<Sizes>(16)
   .on(startGame, (_, payload) => payload)
