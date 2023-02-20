@@ -2,11 +2,12 @@ import cn from 'classnames';
 import { useStore } from 'effector-react';
 import { useEffect } from 'react';
 import { Blocks } from '../blocks';
-import { $boardSize, changeDirection, startGame } from '../../model';
+import { $boardSize, changeDirection, startGame, $points } from '../../model';
 import styles from './style.module.css'
 
 export const Container = () => {
   const boardSize = useStore($boardSize);
+  const points = useStore($points);
 
   const handleStart = () => {
     startGame(boardSize);
@@ -41,6 +42,12 @@ export const Container = () => {
 
   return (
     <div className={styles.container}>
+      <div>
+        Points: {points}
+      </div>
+
+      <br />
+
       <div className={cn(styles.innerLayer, { [styles['size-8']]: true })}>
         <Blocks size={boardSize} />
       </div>

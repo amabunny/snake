@@ -26,3 +26,7 @@ export const $boardSize = createStore<Sizes>(16)
 
 export const $direction = createStore<Direction>('RIGHT')
   .on(changeDirectionOriginal, (_, payload) => payload);
+
+export const $points = createStore<number>(0)
+  .on(eatFood, (points) => points + 1)
+  .reset(gameOver);
